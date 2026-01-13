@@ -103,10 +103,9 @@ async function extractMessageContent(message) {
   userProvidedFileContent = await getUserProvidedFileContent(message);
   contents = contents.concat(userProvidedFileContent);
   COUNTER += 1;
-  // Find the main grid container
-  // const gridContainer = message.querySelector(CLAUDE_GRID_CONTAINER_CLASSES) || message.querySelector(USER_GRID_CONTAINER_CLASSES);
-  const gridContainer = message.querySelector("div:has(> p)");
-  // const gridContainer = message.querySelector('.grid-cols-1.grid.gap-2\\.5');
+  // Find the main grid container, excluding the thinking section
+  const allCandidates = message.querySelectorAll("div:has(> p)");
+  const gridContainer = Array.from(allCandidates).find(el => !el.closest('.overflow-hidden.shrink-0'));
 
   if (gridContainer) {
     // Get all direct children of the grid container
@@ -399,7 +398,9 @@ function addButtonsToMessages() {
         const formattedConvoAsTextBlock = formattedConversationHistory.join(SPLITTER);
         createHistoryModal(formattedConvoAsTextBlock);
       });
-      const messageDiv = response.querySelector('div > div.grid-cols-1.grid');
+      // Find grid element that's NOT in the thinking section (which has class overflow-hidden shrink-0)
+      const allGrids = response.querySelectorAll('div.grid-cols-1.grid');
+      const messageDiv = Array.from(allGrids).find(g => !g.closest('.overflow-hidden.shrink-0'));
       if (messageDiv) {
         messageDiv.insertAdjacentElement('afterend', button);
       } else {
